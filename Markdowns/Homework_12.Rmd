@@ -1,0 +1,190 @@
+---
+title: "Homework_12"
+author: "Brandon Wang"
+date: "2026-10-23"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(lubridate)
+
+library(tidyverse)
+
+library(ggplot2)
+
+library(readr)
+
+library(dplyr)
+
+library(mosaicData)
+```
+
+# Exercise 1
+Convert the following to date or date/time objects.
+
+a) September 13, 2010.
+
+```{r 1a}
+
+mdy('September 13, 2010')
+
+```
+
+b) Sept 13, 2010.
+
+```{r 1b}
+
+mdy('Sept 13, 2010')
+
+```
+
+c) Sep 13, 2010.
+
+```{r 1c}
+
+mdy('Sep 13, 2010')
+
+```
+
+d) S 13, 2010. Comment on the month abbreviation needs.
+
+```{r 1d}
+
+mdy('S 13, 2010')
+
+mdy('Sep 13, 2010')
+
+```
+
+The abbreviation must be the three letter standard format. 
+
+e) 07-Dec-1941.
+
+```{r 1e}
+
+dmy('07-Dec-1941')
+
+```
+
+f) 1-5-1998. Comment on why you might be wrong.
+
+```{r 1f}
+
+mdy('1-5-1998')
+
+```
+The first two digits could either be a month or a day 
+
+g) 21-5-1998. Comment on why you know you are correct.
+
+```{r 1g}
+
+dmy('21-5-1998')
+
+```
+I know I'm right because therea aren't 21 months in a year. 
+
+h) 2020-May-5 10:30 am
+
+```{r 1h}
+
+ymd_hm('2020-May-5 10:30 am')
+
+```
+
+i) 2020-May-5 10:30 am PDT (ex Seattle)
+
+```{r 1i}
+
+ymd_hm('2020-May-5 10:30 am', tz = 'PDT')
+
+```
+
+j) 2020-May-5 10:30 am AST (ex Puerto Rico)
+
+# Exercise 3
+
+Suppose you have arranged for a phone call to be at 3 pm on May 8, 2025 at Arizona time. However, the recipient will be in Auckland, NZ. What time will it be there?
+
+```{r exercise3}
+
+mdy_hm('4-8-2025 3:00 PM', tz='Pacific/Auckland')
+
+```
+
+I feel like I was suppossed to do something else here, but I'm not sure. I ended up using the OlsonNames() function to find the timezone
+
+# Exercise 4
+
+From this book’s GitHub directory, navigate to the data-raw directory and then download the Pulliam_Airport_Weather_Station.csv data file. (There are several weather station files. Make sure you get the correct one!) There is a DATE column (is it of type date when you import the data?) as well as the Maximum and Minimum temperature. For the last 5 years of data included in the file, plot the time series of daily maximum temperature with date on the x-axis. Write your code so that it will work if I update the date set. Hint: Find the maximum date in the data set and then subtract 5 years. Will there be a difference if you use dyears(5) vs years(5)? Which seems more appropriate here?
+
+```{r exercise 4}
+
+Pulliam_Airport <- read.csv("Data-Raw/Pulliam_Airport_Weather_Station.csv")
+# View(Pulliam_Airport_Weather_Station)
+
+max_date <- ymd('2019-09-15') 
+
+min_date <- max_date - years(5)
+
+Pulliam_Airport_cut <- Pulliam_Airport %>% filter(DATE <= max_date & DATE >= 
+   min_date) %>% mutate(dates_data = make_date(DATE))
+
+ggplot( data=Pulliam_Airport_cut, aes(x=DATE, y=TMAX) ) +  
+    geom_point( ) 
+
+
+
+```
+
+I was stuck on this because I forgot to use the & sign in the filter function. It was originally filter(min_date < DATE < max_date). I was also having trouble having the dates to actually appear on the x-axis. 
+
+# Exercise 5
+It turns out there is some interesting periodicity regarding the number of births on particular days of the year.
+
+a) Using the mosaicData package, load the data set Births78 which records the number of children born on each day in the United States in 1978. Because this problem is intended to show how to calculate the information using the date, remove all the columns except date and births.
+
+```{r exercise5a}
+
+head(data.frame(Births78))
+
+Births78_Cut <- select(Births78, date, births)
+
+head(Births78_Cut)
+
+```
+
+b) Graph the number of births vs the date with date on the x-axis. What stands out to you? Why do you think we have this trend?
+
+```{r 5b}
+
+ggplot( data=Births78_Cut, aes(x=date, y=births) ) +  
+    geom_point(  ) 
+
+```
+
+c) To test your assumption, we need to figure out the what day of the week each observation is. Use dplyr::mutate to add a new column named dow that is the day of the week (Monday, Tuesday, etc). This calculation will involve some function in the lubridate package and the date column.
+
+```{r 5c}
+
+Births78_Cut <- Births78_Cut %>%
+  mutate(DOW=wday(date, label=TRUE)
+           )
+
+head(Births78_Cut)
+
+```
+
+d) Plot the data with the point color being determined by the day of the week variable.
+
+```{r 5d}
+
+ggplot( data=Births78_Cut, aes(x=date, y=births) ) +  
+    geom_point( aes(color=DOW) ) 
+
+```
+
+
+

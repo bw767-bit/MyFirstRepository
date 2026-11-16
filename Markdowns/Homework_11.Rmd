@@ -1,0 +1,185 @@
+---
+title: "Homework_11"
+author: "Brandon Wang"
+date: "2026-10-19"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(stringr)
+
+library(tidyverse)
+```
+
+# Exercise 1 
+
+For the following regular expression, explain in words what it matches on. Then add test strings to demonstrate that it in fact does match on the pattern you claim it does. Make sure that your test set of strings has several examples that match as well as several that do not. Show at least two examples that return TRUE and two examples that return FALSE. If you copy the Rmarkdown code for these exercises directly from my source pages, make sure to remove the eval=FALSE from the R-chunk headers.
+
+a) 
+
+```{r 1a}
+
+strings <- c('adel', 'abline', 'absolutley', 'computer')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, 'ab') )
+
+```
+
+This expression is detecting for strings with 'ab'. 
+
+b) 
+
+```{r 1b}
+
+strings <- c('adel', 'abline', 'absolutley', 'computer')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '[ab]') )
+
+```
+
+This expression is detecting strings that either contain a or b. 
+
+c) 
+
+```{r }
+
+strings <- c('adel', 'abline', 'absolutley', 'computer')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '^[ab]') )
+
+```
+
+The expression is detecting strings without a or b. 
+
+d) 
+
+```{r 1d}
+
+strings <- c('adel', '432 a', 'absolutley', 'computer')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '\\d+\\s[aA]') )
+
+```
+
+This expression is looking for one or more consecutive digits followed by any white space followed by the characters 'a' or 'A'. 
+
+e) 
+
+```{r 1e}
+
+strings <- c('adel', '444 a', '444absolutley', 'computer')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '\\d+\\s*[aA]') )
+
+```
+
+This expression is detecting one or more digits followed by zero or more spaces followed by the character 'a' or 'A' 
+
+f) 
+
+```{r 1f}
+
+strings <- c('adel', '444 a', '444absolutley', 'computer')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '.*') )
+
+```
+
+This expression is detecting strings with zero or more periods '.'. This means that every string results as true. 
+
+g) 
+
+```{r 1g}
+
+strings <- c('adel', '4Pbar', '444absolutley', 'computer')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '^\\w{2}bar') )
+
+```
+
+These questions were fairly straight forwards when I started referring to the regular expression table. 
+
+# Exercise 2  
+
+```{r 2}
+
+file.names <- c( 'S123.P2.C10_20120621_213422.jpg',
+                 'S10.P1.C1_20120622_050148.jpg',
+                 'S187.P2.C2_20120702_023501.jpg')
+
+file.names2 <- str_replace_all(file.names, "\\.", "\\_") 
+
+file.names_split <- str_split_fixed(file.names2, "\\_", n=6)
+
+file.years <- str_sub(file.names_split[,4], start = 1, end = 4)
+
+file.month <- str_sub(file.names_split[,4], start = 5, end = 6)
+
+file.day <- str_sub(file.names_split[,4], start = 7, end = 8)
+
+file.hour <- str_sub(file.names_split[,5], start = 1, end = 2)
+
+file.minute <- str_sub(file.names_split[,5], start = 3, end = 4)
+
+file.sec <- str_sub(file.names_split[,5], start = 5, end = 6)
+
+file_data_frame <- data.frame(
+  site = file.names_split[,1],
+  plot = file.names_split[,2],
+  camera = file.names_split[,3],
+  year = file.years,
+  month = file.month,
+  day = file.day,
+  hour = file.hour,
+  minute = file.minute,
+  second = file.sec
+  
+) 
+
+file_data_frame
+```
+
+The most difficult part of this exercise was sub-grouping the dates. I also forgot to put backslashes in the regular expressions. 
+
+# Exercise 3 
+
+The full text from Lincoln’s Gettysburg Address is given below. It has been provided in a form that includes lots of different types of white space. Your goal is to calculate the mean word length of Lincoln’s Gettysburg Address! Note: you may consider ‘battle-field’ as one word with 11 letters or as two words ‘battle’ and ‘field’. The first option a bit more difficult and technical!.
+
+```{r exercise 3}
+Gettysburg <- 'Four score and seven years ago our fathers brought forth on this 
+continent, a new nation, conceived in Liberty, and dedicated to the proposition 
+that all men are created equal.
+
+Now we are engaged in a great civil war, testing whether that nation, or any 
+nation so conceived and so dedicated, can long endure. We are met on a great 
+battle-field of that war. We have come to dedicate a portion of that field, as 
+a final resting place for those who here gave their lives that that nation might 
+live. It is altogether fitting and proper that we should do this.
+
+But, in a larger sense, we can not dedicate -- we can not consecrate -- we can 
+not hallow -- this ground. The brave men, living and dead, who struggled here, 
+have consecrated it, far above our poor power to add or detract. The world will 
+little note, nor long remember what we say here, but it can never forget what 
+they did here. It is for us the living, rather, to be dedicated here to the 
+unfinished work which they who fought here have thus far so nobly advanced. It 
+is rather for us to be here dedicated to the great task remaining before us -- 
+that from these honored dead we take increased devotion to that cause for which 
+they gave the last full measure of devotion -- that we here highly resolve that 
+these dead shall not have died in vain -- that this nation, under God, shall 
+have a new birth of freedom -- and that government of the people, by the people, 
+for the people, shall not perish from the earth.'
+
+gettysburg_characters <- str_extract_all(Gettysburg, "\\w+")
+
+gettysburg_characters[[1]]
+
+head(data.frame(gettysburg_characters))
+
+str_length(gettysburg_characters) / length(gettysburg_characters[[1]])
+
+
+
+```
+The average word length is about 8 letters. I know I didn't do this the correct way. I was able to use code to count the amount of alphabetic characters. I tried to make each words individual elements and turning it into the data frame was the closest i got. However, when I tried to use the length() function on the data frame, it still returned the amount of characters instead of words. I ended up noticing that the data.frame has 272 rows which means that there are 272 words in the Gettysburg Address. I then just divided this number by the length(gettysburg_characters). 

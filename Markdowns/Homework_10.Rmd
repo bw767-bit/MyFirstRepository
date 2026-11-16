@@ -1,0 +1,210 @@
+---
+title: "Chapter_10_Homework"
+author: "Brandon Wang"
+date: "2026-10-12"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(microbenchmark)
+library(tidyverse) 
+library(ggplot2)
+library(dplyr)
+```
+
+# Exercise 1
+
+a) Write your function without regard for it working with vectors of data. Demonstrate that it works by calling the function three times, once where  x<a , once where  a<x<b , and finally once where  b<x .
+
+```{r 1a}
+
+duniform <- function(x, a, b){ # establish the arguments in your function
+  if(x>=a && x<=b){  # x is between the values a and b
+    fx <- 1/(b-a) # if the the top statement is true than run the function fx
+    return(fx) # return the value calculated
+  }
+  return(0) # return 0 if x is outside the bounds of a and b
+}
+
+duniform(5, 1, 10)
+
+duniform(1, 5, 10)
+
+```
+
+b) Next lets improve our function to work correctly for a vector of x values. Modify your function in part (a) so that the core logic uses a for-loop statement and the loop moves through each element of x in succession. Since this is a bit more of a complex task, your function should look something like this:
+
+```{r 1b}
+
+# define variables
+x <- seq(0, 6, by = .5) 
+a <- 1
+b <- 5
+ 
+ #define the arguments of the function
+duniform <- function(x, a, b)
+  #create an empty object called fx
+  { fx <- NULL  
+  # creates a loop that for every integer in the vector x from the first to the
+  # last value
+for(i in 1:length(x)){ 
+  # if the integer being evaluated in x is between the values a and b,
+  # then preform the density calculation which is defined by fx
+  if( x[i] >= a & x[i] <= b ){fx[i] <- 1/(b-a)} 
+  # if not, return 0
+else {fx[i] <- 0} 
+}
+  return(fx) #return all the solutions of x in fx
+}
+
+  
+data.frame( x=seq(-1, 12, by=.001) ) %>%
+  mutate( y = duniform(x, 2, 10) ) %>%
+  ggplot( aes(x=x, y=y) ) +
+  geom_step()
+
+```
+
+c)
+Install the R package microbenchmark. We will use this to discover the average duration (time) your function takes to execute code. Execute the following
+
+microbenchmark::microbenchmark( duniform( seq(-4,12,by=.0001), 4, 8), times=100)
+This will call the input R expression (your duniform function on a rather large vector of data) 100 times and report summary statistics on how long it took for the code to run. In particular, look at the median time for evaluation.
+
+```{r 1c}
+
+microbenchmark::microbenchmark( duniform( seq(-4,12,by=.0001), 4, 8), times=100)
+
+```
+
+d) 
+Instead of using a for loop, it might have been easier to use an ifelse() command, which inherently accepts vectors. Rewrite your function one last time, this time avoiding the for loop and instead introducing the vectorizable ifelse() command. Verify that your function works correctly by producing a plot of a uniform density. Finally, run the microbenchmark() code above again.
+
+```{r 1d}
+
+x <- seq(0, 5, by = .5)
+a <- 1
+b <- 5
+fx1 <- NULL
+
+
+duniform1 <- function(x, a, b) {
+  fx1 <- ifelse(x >= a & x <= b, 1/(b-a), 0) #Using the ifelse statement to 
+  # control for what happens when the logical expression for x is true or false  
+  return(fx1)}
+  
+
+  
+data.frame( x=seq(-1, 12, by=.001) ) %>%
+  mutate( y = duniform1(x, 2, 10) ) %>%
+  ggplot( aes(x=x, y=y) ) +
+  geom_step()
+
+microbenchmark::microbenchmark( duniform1( seq(-4,12,by=.0001), 4, 8), times=100)
+
+```
+
+e) 
+Comment on Which version of your function was easier to write? Which ran faster?
+
+The "ifelse" statement was much easier to write and ran faster on average. 
+
+
+# Exercise 2
+
+For your duniform() function provide default values of 0 and 1 for the arguments a and b. Demonstrate that your function is appropriately using the given default values by producing a graph of the density without specifying the a or b arguments.
+
+```{r exercise2}
+
+duniform1 <- function(x, a=0, b=1) #assign the a and b argument default values 
+  { fx1 <- ifelse(x >= a & x <= b, 1/(b-a), 0)
+  return(fx1)}
+
+  
+data.frame( x=seq(-1, 12, by=.001) ) %>%
+  mutate( y = duniform1(x) ) %>%
+  ggplot( aes(x=x, y=y) ) +
+  geom_step()
+
+
+```
+
+# Exercise 3
+
+a) Create a function that takes an input vector of numerical values and produces an output vector of the standardized values.
+
+```{r 3a}
+# define the x vector and two statistics for x
+x <- seq(0, 5, by = .5)
+xbar <- mean(x)
+sd <- sd(x)
+
+# calculate the z score for each value of x
+z <- (x-xbar)/sd
+
+# define a function to assign standardized values to all points in a vector x 
+standardize <- function(x){
+  xbar <- mean(x)
+sd <- sd(x)
+z <- (x-xbar)/sd
+return(z)
+}
+
+standardize(x)
+```
+
+b) Apply this function to each numeric column in a data frame using the dplyr::across() or the dplyr::mutate_if() commands. This is often done in model algorithms that rely on numerical optimization methods to find a solution. By keeping the scales of different predictor covariates the same, the numerical optimization routines generally work better. Below is some code that should really help once your standardize() function is working. The graphs may not look very different, but pay attention to the x- and y-axis scales!
+
+```{r 3b}
+
+data( 'iris' )
+# Graph the pre-transformed data.
+ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, color=Species)) +
+  geom_point() +
+  labs(title='Pre-Transformation')
+
+# Standardize all of the numeric columns
+# across() selects columns and applies a function to them
+# there column select requires a dplyr column select command such
+# as starts_with(), contains(), or where().  The where() command
+# allows us to use some logical function on the column to decide
+# if the function should be applied or not.
+iris.z <- iris %>% mutate( across(where(is.numeric), standardize) )
+
+# Graph the post-transformed data.
+ggplot(iris.z, aes(x=Sepal.Length, y=Sepal.Width, color=Species)) +
+  geom_point() +
+  labs(title='Post-Transformation')
+
+```
+The pre transformation data is plotted against the original values for the two vairables and the post transformation data is plotted against the standardized values for each original data point in both variables. 
+
+# Exercise 4
+In this exercise, you’ll write a function that will output a vector of the first  
+n terms in the child’s game Fizz Buzz. Your function should only accept the argument  
+n, the number to which you wish to count.
+
+```{r 4}
+
+# define a function for the fizzbuzz test with one argument n
+fizzbuzz <- function(n) 
+  # define an object y as 1 for the while loop
+  {y <- 1 
+  # run a while loop for when y is less than or equal to n
+while(y <= n) 
+   # establish the parameters of the FizzBuzz test
+  {if(y %% 3 == 0 && y %% 5 == 0) {print("FizzBuzz")} else
+    if (y %% 5 == 0){print("Buzz")} else 
+      if(y %% 3 == 0){print("Fizz")} else 
+        if(y %% 3 != 0 && y %% 5 != 0) {print(y)}
+  y <- y+1
+} 
+}
+
+fizzbuzz(15)
+
+```
+
+It took me a while to figure this out. I used a for loop to get the fizzbuzz test to actually work, but then changed to a while loop so that my function only needed the argument n. I'm confused about why the text book mentioned the past() function, what would that have done? 

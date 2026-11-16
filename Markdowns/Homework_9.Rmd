@@ -1,0 +1,41 @@
+---
+title: "Chapter_9_Homework"
+author: "Brandon Wang"
+date: "2026-10-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)      # Our usual data manipulation tools
+library(readxl)         # For reading MS Excel files
+library(googlesheets4)  # For reading Google Sheets
+
+```
+
+# Exercise 1
+Download from GitHub the data file by clicking on this link: Example_5.xls. Open it in Excel and figure out which sheet of data we should import into R. At the same time figure out how many initial rows need to be skipped. Import the data set into a data frame and show the structure of the imported data using the str() command. Make sure that your data has  n = 31 observations and the three columns are appropriately named. If you make any modifications to the data file, comment on those modifications.
+
+```{r exercise 1}
+
+data.5 <- read_excel('data-raw/Example_5.xls', sheet = "RawData", range = 'A5:C36')
+
+str(data.5)
+
+```
+
+This was fairly simple and reminiscent of assignments I've done for other software based classes. However, I shad to use the help (?) function to better understand the arguments. 
+
+# Exercise 2
+Download from GitHub the data file by clicking on this link: Example_3.xls. Import the data set into a data frame and show the structure of the imported data using the tail() command which shows the last few rows of a data table. Make sure the Tesla values are NA where appropriate and that both -9999 and NA are imported as NA values. If you make any modifications to the data file, comment on those modifications.
+
+```{r exercise 2}
+
+data.3 <- read_excel('data-raw/Example_3.xls', sheet = "data", na = c("NA", "-9999"), range = 'A1:L34')
+
+tail(data.3)
+
+```
+
+This was also failry simple. The only issue I had was representing the NA values. I tried creating a vector out of the values but wrote the argument wrong, so I was confused on why my code wasn't working. I had to create two different strings in the vector in order for my code to work. 
